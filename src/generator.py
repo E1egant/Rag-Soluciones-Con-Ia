@@ -35,7 +35,7 @@ MODELO_GEMINI_FALLBACK = "gemini-3.1-flash-lite"
 def _generar_con_gemini(system_prompt: str, user_prompt: str, modelo: str, max_tokens: int) -> str:
     from google import genai
     from google.genai import types
-    from google.genai.errors import ServerError
+    from google.genai.errors import ClientError, ServerError
     import httpx
 
     client = genai.Client(
@@ -64,6 +64,14 @@ def _generar_con_gemini(system_prompt: str, user_prompt: str, modelo: str, max_t
                     if getattr(p, "text", None) and not getattr(p, "thought", False)
                 )
                 return texto.strip()
+            except ClientError as e:
+                ultimo_error = e
+                # 429 = cuota agotada para ESTE modelo específicamente (la cuota
+                # gratuita de Gemini es por modelo); no tiene sentido reintentar
+                # el mismo modelo, pero el fallback puede tener cupo propio.
+                if e.code == 429:
+                    break
+                raise
             except (ServerError, httpx.ReadTimeout, httpx.ConnectTimeout) as e:
                 ultimo_error = e
                 if intento < reintentos_por_modelo - 1:
@@ -89,9 +97,25 @@ def _generar_con_anthropic(system_prompt: str, user_prompt: str, modelo: str, ma
 def generar_respuesta(system_prompt: str, user_prompt: str, modelo: str | None = None,
                        max_tokens: int = 1000) -> str:
     if os.environ.get("GEMINI_API_KEY"):
-        return _generar_con_gemini(
-            system_prompt, user_prompt, modelo or MODELO_GEMINI_POR_DEFECTO, max_tokens
-        )
+        try:
+            return _generar_con_gemini(
+                system_prompt, user_prompt, modelo or MODELO_GEMINI_POR_DEFECTO, max_tokens
+            )
+        except Exception:
+            # Si Gemini falla del todo (ej. cuota agotada en ambos modelos) y
+            # hay respaldo de Anthropic configurado, se usa antes de degradar
+            # a modo demo — evita que una consulta de cliente termine en un
+            # error sin manejar en vez de una respuesta (aunque sea genérica).
+            if os.environ.get("ANTHROPIC_API_KEY"):
+                return _generar_con_anthropic(
+                    system_prompt, user_prompt, MODELO_ANTHROPIC_POR_DEFECTO, max_tokens
+                )
+            logging.getLogger(__name__).exception("Fallo generando respuesta con Gemini")
+            return (
+                "Estamos con alta demanda en este momento y no puedo generar tu "
+                "recomendación ahora. Por favor intenta en unos minutos o "
+                "escríbenos por WhatsApp y un asesor te ayuda directo."
+            )
 
     if os.environ.get("ANTHROPIC_API_KEY"):
         return _generar_con_anthropic(

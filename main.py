@@ -5,6 +5,13 @@ Uso:
     python main.py "Busco algo dulce y vainillado, presupuesto bajo 12000 el 10ml"
 """
 import sys
+
+# La consola de Windows suele usar cp1252, que no soporta los emojis que el
+# propio prompt de marca permite en las respuestas; sin esto, main.py crashea
+# al imprimir en vez de mostrar la respuesta del agente.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 from dotenv import load_dotenv
 load_dotenv()
 from src.orchestrator import AgenteElegantDrops

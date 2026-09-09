@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from . import prompts, trazabilidad
 from .context_builder import ensamblar_contexto, rerank
 from .generator import generar_respuesta
-from .guardrails import ConsultaRechazada, validar_consulta
+from .guardrails import ConsultaRechazada, es_consulta_vaga, validar_consulta
 from .retriever import Retriever
 
 UMBRAL_CONFIANZA_MINIMA = 0.12  # bajo este score de similitud máxima, se considera "sin contexto suficiente"
@@ -39,11 +39,22 @@ class AgenteElegantDrops:
                 derivado_a_humano=True,
             )
 
+        if es_consulta_vaga(consulta):
+            print("DEBUG: consulta vaga, pidiendo mas info...", flush=True)
+            prompt_usuario = prompts.PROMPT_CONSULTA_VAGA.format(consulta=consulta)
+            texto = generar_respuesta(prompts.SYSTEM_PROMPT, prompt_usuario)
+            trazabilidad.registrar(consulta, [], texto)
+            return RespuestaAgente(texto=texto, fuentes_usadas=[], derivado_a_humano=False)
+
         print("DEBUG: llamando a reescritura...", flush=True)
         prompt_reescritura = prompts.PROMPT_REESCRITURA.format(consulta=consulta)
         palabras_clave = generar_respuesta(prompts.SYSTEM_PROMPT, prompt_reescritura, max_tokens=300)
         print(f"DEBUG: palabras_clave = {palabras_clave}", flush=True)
-        if not palabras_clave:
+        # Si no hay LLM configurado, generar_respuesta devuelve el texto de
+        # "modo demo" (el prompt reflejado) en vez de palabras clave reales;
+        # usarlo tal cual ensucia el retriever, así que en ese caso se cae
+        # de vuelta a la consulta original.
+        if not palabras_clave or palabras_clave.startswith("[MODO DEMO"):
             palabras_clave = consulta
 
         print("DEBUG: buscando en retriever...", flush=True)

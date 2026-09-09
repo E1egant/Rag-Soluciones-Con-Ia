@@ -68,6 +68,24 @@ femenino, unisex (nunca "hombre" o "mujer").
 Consulta original: {consulta}
 """
 
+# Justificación (IL1.1): prompt de consulta vaga. Se activa ANTES del
+# retriever (ver guardrails.es_consulta_vaga) cuando la consulta no trae
+# suficiente información de negocio (gusto, presupuesto, género, ocasión).
+# Evita que el pipeline fuerce una recomendación puntual sobre una coincidencia
+# débil del TF-IDF solo porque el score superó el umbral por casualidad —
+# es preferible pedir un dato más que arriesgar una respuesta no deseada.
+PROMPT_CONSULTA_VAGA = """\
+El cliente escribió: "{consulta}"
+
+Es un saludo o una consulta demasiado general para recomendar un decant \
+específico todavía. Redacta una respuesta breve y cercana que:
+1) salude o reconozca la consulta,
+2) pida 1-2 datos concretos para poder recomendar bien: notas olfativas o \
+   gusto (dulce, fresco, amaderado, etc.), presupuesto aproximado, género \
+   (masculino/femenino/unisex) u ocasión de uso.
+No recomiendes ningún producto todavía ni menciones precios.
+"""
+
 # Justificación (IL1.1): prompt de manejo de baja confianza. Se activa cuando
 # el retriever no supera un umbral de score (ver orchestrator.py), evitando
 # que el LLM "rellene" con conocimiento genérico no verificado del catálogo.
