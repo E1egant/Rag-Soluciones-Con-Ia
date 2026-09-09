@@ -45,14 +45,18 @@ datos mediante un pipeline RAG:
 - **Fuente externa:** `data/notas_externas.json` — fichas/reseñas públicas
   de perfumería que enriquecen la descripción sensorial.
 
-Flujo completo: `guardrails → retriever híbrido → re-ranker → ensamblador
-de contexto → LLM → post-procesado → trazabilidad`. Ver
-`docs/arquitectura.png` para el diagrama y `docs/informe.docx` para la
-justificación técnica de cada decisión.
+Flujo completo: `guardrails → reescritura de consulta → retriever híbrido →
+re-ranker → ensamblador de contexto → LLM → post-procesado → trazabilidad`.
+La etapa de **reescritura de consulta** convierte el lenguaje libre del
+cliente (ej. "quiero un perfume para hombre, verano") en palabras clave que
+calzan con el vocabulario exacto del catálogo (ej. "masculino"), porque el
+retriever TF-IDF solo matchea texto literal. Ver `docs/arquitectura.png`
+para el diagrama y `docs/informe.docx` para la justificación técnica de
+cada decisión.
 
 ## Requisitos previos
 
-- Python 3.10 o superior (probado en 3.12).
+- Python 3.10 o superior (probado en 3.12/3.13).
 - Una API key **gratuita** de Google Gemini para la generación real con LLM
   (instrucciones abajo — toma 2 minutos y no pide tarjeta de crédito).
 
@@ -73,6 +77,7 @@ pip install -r requirements.txt
 # 4. Configurar la API key (ver sección "Cómo obtener una API key gratis")
 cp .env.example .env
 # abrir .env y pegar la clave en GEMINI_API_KEY=...
+# el archivo DEBE llamarse exactamente ".env" (no "_env" ni ".env.example")
 
 # 5. Ejecutar la demo
 python3 main.py "Busco algo dulce y vainillado, presupuesto bajo 12000 el 10ml"
@@ -129,14 +134,30 @@ crédito de prueba que se agota) y no pide tarjeta de crédito:
    cualquier cuenta Google.
 2. Clic en "Create API key".
 3. Copiar la clave y pegarla en `.env`, en la línea `GEMINI_API_KEY=`.
-4. Listo — el proyecto usa el modelo `gemini-2.5-flash` por defecto
-   (`src/generator.py`), que está dentro de la capa gratuita.
+4. Listo — el proyecto usa el modelo `gemini-3.6-flash` por defecto
+   (`src/generator.py`), con `gemini-3.1-flash-lite` como respaldo
+   automático si el modelo principal está saturado o falla. Ambos están
+   dentro de la capa gratuita.
 
 El código también soporta Claude (Anthropic) como alternativa de pago si
 alguien del equipo ya tiene créditos: basta con completar
 `ANTHROPIC_API_KEY` en `.env` en vez de `GEMINI_API_KEY`. `generar_respuesta()`
 en `src/generator.py` elige automáticamente cuál usar según qué variable
 esté configurada.
+
+### Resiliencia de la llamada al LLM (`src/generator.py`)
+
+Como el proyecto depende de la disponibilidad de un servicio externo
+gratuito, `_generar_con_gemini` implementa tres capas de resiliencia para
+que una falla temporal de Google no tumbe la demo en vivo:
+
+1. **Reintentos con backoff exponencial** (hasta 3 intentos, esperando
+   1s/2s/4s) ante errores de servidor (503, sobrecarga) o timeouts de red.
+2. **Modelo de respaldo automático**: si `gemini-3.6-flash` agota sus
+   reintentos, el sistema prueba con `gemini-3.1-flash-lite` antes de
+   rendirse.
+3. **Timeout explícito de 30s** por request, para que una conexión colgada
+   falle de forma controlada en vez de bloquear el programa indefinidamente.
 
 ## Modo demo: para qué sirve y en qué se diferencia del modo real
 
@@ -147,7 +168,7 @@ distintos con un solo punto en común:
 
 | | Modo demo (sin ninguna API key) | Modo real (con GEMINI_API_KEY o ANTHROPIC_API_KEY) |
 |---|---|---|
-| Guardrails, retriever, re-ranker, ensamblado de contexto, trazabilidad | ✅ Se ejecutan igual, con la misma lógica | ✅ Se ejecutan igual, con la misma lógica |
+| Guardrails, reescritura, retriever, re-ranker, ensamblado de contexto, trazabilidad | ✅ Se ejecutan igual, con la misma lógica | ✅ Se ejecutan igual, con la misma lógica |
 | Última etapa (generación de lenguaje natural) | ❌ No llama a ningún LLM; devuelve el prompt final como texto plano, a modo de vista previa | ✅ Llama al LLM real y devuelve la respuesta redactada, lista para el cliente |
 | ¿Sirve para entregar el proyecto? | **No** — no demuestra generación aumentada real, solo la mitad "R" de RAG, no la "G" | **Sí** — es el comportamiento que se debe mostrar en la defensa |
 | ¿Para qué existe entonces? | Para que alguien pueda clonar el repo, instalar dependencias y correr los tests sin depender de que la API de Gemini esté arriba en ese momento (evita que un corte de servicio externo haga fallar la entrega) | — |
@@ -198,12 +219,12 @@ elegantdrops-rag/
 
 ## Solución de problemas
 
-- **`ModuleNotFoundError: No module named 'sklearn'` / `google.genai`**:
-  falta instalar dependencias — repetir el paso 3
+- **`ModuleNotFoundError: No module named 'sklearn'` / `google.genai'` /
+  `dotenv`**: falta instalar dependencias — repetir el paso 3
   (`pip install -r requirements.txt`) con el entorno virtual activado.
 - **Sigue saliendo `[MODO DEMO...]` aunque puse una API key**: revisar que
-  el archivo se llame exactamente `.env` (no `.env.example`) y que esté en
-  la raíz del repo, junto a `main.py`; revisar que la línea sea
+  el archivo se llame exactamente `.env` (no `.env.example` ni `_env`) y
+  que esté en la raíz del repo, junto a `main.py`; revisar que la línea sea
   `GEMINI_API_KEY=AIza...` sin comillas ni espacios extra.
 - **Error 403 / "API key not valid" de Gemini**: la clave se copió mal o
   fue revocada — generar una nueva en
@@ -211,6 +232,24 @@ elegantdrops-rag/
 - **Error 429 / "rate limit" de Gemini**: la capa gratuita tiene un límite
   de solicitudes por minuto; esperar unos segundos y reintentar (no es un
   error del código).
+- **Error 503 "UNAVAILABLE" / "high demand"**: sobrecarga temporal del
+  servidor de Google, no un bug del código; `generator.py` ya reintenta
+  automáticamente con backoff y cae al modelo de respaldo — si persiste,
+  esperar 1-2 minutos.
+- **404 "model ... is no longer available"**: Google deprecó el modelo
+  configurado. Correr el siguiente script para ver los modelos vigentes
+  para tu key y actualizar `MODELO_GEMINI_POR_DEFECTO` en `generator.py`:
+  ```
+  python -c "
+  from dotenv import load_dotenv; load_dotenv()
+  from google import genai
+  import os
+  client = genai.Client(api_key=os.environ['GEMINI_API_KEY'])
+  for m in client.models.list():
+      if 'generateContent' in m.supported_actions:
+          print(m.name)
+  "
+  ```
 - **`git push` rechaza el archivo `.env`**: es intencional, está en
   `.gitignore` para no subir la clave por error — cada persona del equipo
   configura la suya localmente.
@@ -223,26 +262,38 @@ elegantdrops-rag/
 ## Uso de Inteligencia Artificial en este proyecto
 
 Se utilizó Claude (Anthropic) como apoyo para: redacción y estructuración del
-código base, generación del diagrama de arquitectura y redacción inicial del
-informe técnico. El equipo revisó, ajustó y validó cada decisión de diseño;
-las conclusiones y las reflexiones individuales del informe fueron
-redactadas por los integrantes sin apoyo de IA, conforme a las indicaciones
-de uso ético de IA de la evaluación (https://bibliotecas.duoc.cl/ia).
+código base, generación del diagrama de arquitectura, redacción inicial del
+informe técnico y depuración de errores de integración con la API de Gemini
+(migración de modelo por deprecación, manejo de timeouts/reintentos, y
+filtrado de contenido de "thinking" en la respuesta del modelo). El equipo
+revisó, ajustó y validó cada decisión de diseño; las conclusiones y las
+reflexiones individuales del informe fueron redactadas por los integrantes
+sin apoyo de IA, conforme a las indicaciones de uso ético de IA de la
+evaluación (https://bibliotecas.duoc.cl/ia).
 
 ## Notas de diseño y limitaciones
 
 - El retriever usa TF-IDF en lugar de embeddings neuronales para evitar
   dependencias adicionales; la interfaz es intercambiable por un índice
   vectorial real sin tocar el resto del pipeline (ver docstring en
-  `retriever.py`).
+  `retriever.py`). Por ser matching de texto literal (no semántico), la
+  etapa de reescritura de consulta es la que traduce el lenguaje natural
+  del cliente al vocabulario exacto del catálogo (ej. "hombre" → "masculino").
 - El corpus de ejemplo (5 productos, 3 fichas externas) es representativo a
   escala reducida del catálogo real de Elegant Drops (1.376+ productos);
   `ingest.py` está diseñado para escalar reemplazando los JSON por una
   consulta a la base de datos de producción (MySQL).
-- La capa gratuita de Gemini tiene límites de solicitudes por minuto/día;
-  suficientes para desarrollo y defensa, pero no para un volumen de
-  producción real — eso se documenta como limitación conocida en el
-  informe técnico, sección 5.1.
+- La capa gratuita de Gemini tiene límites de solicitudes por minuto/día,
+  y los nombres de modelo pueden deprecarse durante el semestre (ya ocurrió
+  con `gemini-2.5-flash`); suficientes para desarrollo y defensa, pero no
+  para un volumen de producción real ni como nombre de modelo fijo a largo
+  plazo — eso se documenta como limitación conocida en el informe técnico,
+  sección 5.1.
+- Los modelos Gemini 3.x no permiten desactivar completamente el
+  razonamiento interno (`thinking`); `generator.py` lo limita a
+  `thinking_level="low"` y filtra explícitamente los fragmentos marcados
+  como `thought` antes de devolver la respuesta, para que no se mezclen
+  con el texto final visible al cliente.
 - La trazabilidad se guarda en `data/trazabilidad.jsonl` (no versionado, ver
   `.gitignore`); en producción iría a la base de datos ya usada por Elegant
   Drops.
