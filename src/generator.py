@@ -4,7 +4,7 @@ Módulo de generación (llamada al LLM).
 Soporta dos proveedores de LLM, seleccionados automáticamente según qué
 variable de entorno esté configurada (ver .env.example):
 
-  1. GEMINI_API_KEY  -> Google Gemini (gemini-2.5-flash). Recomendado para
+  1. GEMINI_API_KEY  -> Google Gemini (gemini-3.6-flash). Recomendado para
      este proyecto: tiene una capa gratuita permanente sin tarjeta de
      crédito, suficiente para desarrollar y defender el encargo
      (ver docs/informe.docx, sección 5.1, para la justificación completa).
@@ -21,26 +21,56 @@ El punto de entrada público (`generar_respuesta`) es el único lugar que
 conoce el proveedor concreto, de modo que cambiarlo no afecta al resto del
 pipeline (bajo acoplamiento, ver justificación de arquitectura en el informe).
 """
+import logging
 import os
+import time
+
+logging.getLogger("google_genai").setLevel(logging.ERROR)
 
 MODELO_ANTHROPIC_POR_DEFECTO = "claude-sonnet-4-6"
-MODELO_GEMINI_POR_DEFECTO = "gemini-2.5-flash"
+MODELO_GEMINI_POR_DEFECTO = "gemini-3.6-flash"
+MODELO_GEMINI_FALLBACK = "gemini-3.1-flash-lite"
 
 
 def _generar_con_gemini(system_prompt: str, user_prompt: str, modelo: str, max_tokens: int) -> str:
     from google import genai
     from google.genai import types
+    from google.genai.errors import ServerError
+    import httpx
 
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    respuesta = client.models.generate_content(
-        model=modelo,
-        contents=user_prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            max_output_tokens=max_tokens,
-        ),
+    client = genai.Client(
+        api_key=os.environ["GEMINI_API_KEY"],
+        http_options=types.HttpOptions(timeout=30_000),
     )
-    return respuesta.text
+    modelos_a_probar = [modelo, MODELO_GEMINI_FALLBACK]
+    reintentos_por_modelo = 3
+
+    ultimo_error = None
+    for m in modelos_a_probar:
+        for intento in range(reintentos_por_modelo):
+            try:
+                respuesta = client.models.generate_content(
+                    model=m,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                        max_output_tokens=max_tokens,
+                        thinking_config=types.ThinkingConfig(thinking_level="low"),
+                    ),
+                )
+                partes = respuesta.candidates[0].content.parts
+                texto = "".join(
+                    p.text for p in partes
+                    if getattr(p, "text", None) and not getattr(p, "thought", False)
+                )
+                return texto.strip()
+            except (ServerError, httpx.ReadTimeout, httpx.ConnectTimeout) as e:
+                ultimo_error = e
+                if intento < reintentos_por_modelo - 1:
+                    time.sleep(2 ** intento)
+                    continue
+                break
+    raise ultimo_error
 
 
 def _generar_con_anthropic(system_prompt: str, user_prompt: str, modelo: str, max_tokens: int) -> str:
@@ -57,7 +87,7 @@ def _generar_con_anthropic(system_prompt: str, user_prompt: str, modelo: str, ma
 
 
 def generar_respuesta(system_prompt: str, user_prompt: str, modelo: str | None = None,
-                       max_tokens: int = 400) -> str:
+                       max_tokens: int = 1000) -> str:
     if os.environ.get("GEMINI_API_KEY"):
         return _generar_con_gemini(
             system_prompt, user_prompt, modelo or MODELO_GEMINI_POR_DEFECTO, max_tokens

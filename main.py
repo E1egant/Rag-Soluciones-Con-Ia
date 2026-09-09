@@ -5,7 +5,8 @@ Uso:
     python main.py "Busco algo dulce y vainillado, presupuesto bajo 12000 el 10ml"
 """
 import sys
-
+from dotenv import load_dotenv
+load_dotenv()
 from src.orchestrator import AgenteElegantDrops
 
 

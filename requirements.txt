@@ -2,3 +2,4 @@ scikit-learn>=1.4
 google-genai>=0.3
 anthropic>=0.34
 pytest>=8.0
+python-dotenv>=1.0

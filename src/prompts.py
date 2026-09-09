@@ -59,8 +59,11 @@ seguimiento breve para avanzar la venta (ej. tamaño deseado).
 # TF-IDF, que es sensible a vocabulario exacto.
 PROMPT_REESCRITURA = """\
 Reescribe la siguiente consulta de un cliente de perfumería como una lista \
-de 3 a 6 palabras clave de búsqueda (notas olfativas, marcas, género, tipo de \
+de 3 a 6 palabras clave de búsqueda (notas olfativas, marcas, tipo de \
 ocasión), sin explicaciones adicionales, separadas por comas.
+
+Para género, usa EXACTAMENTE una de estas palabras si aplica: masculino, \
+femenino, unisex (nunca "hombre" o "mujer").
 
 Consulta original: {consulta}
 """
