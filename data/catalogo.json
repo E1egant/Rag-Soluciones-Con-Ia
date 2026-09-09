@@ -1,0 +1,67 @@
+[
+  {
+    "id": "ed-001",
+    "marca": "Yves Saint Laurent",
+    "nombre": "Black Opium",
+    "genero": "femenino",
+    "concentracion": "Eau de Parfum",
+    "notas_salida": ["pera", "pimienta rosa"],
+    "notas_corazon": ["café", "jazmín", "flor de naranjo"],
+    "notas_fondo": ["vainilla", "pachuli", "cedro"],
+    "formatos_ml": [2, 3, 5, 10, 30],
+    "precio_10ml_clp": 12990,
+    "stock": true
+  },
+  {
+    "id": "ed-002",
+    "marca": "Giorgio Armani",
+    "nombre": "Acqua di Giò Profumo",
+    "genero": "masculino",
+    "concentracion": "Eau de Parfum",
+    "notas_salida": ["bergamota", "notas marinas"],
+    "notas_corazon": ["salvia", "romero"],
+    "notas_fondo": ["pachuli", "ambroxan"],
+    "formatos_ml": [2, 3, 5, 10],
+    "precio_10ml_clp": 10990,
+    "stock": true
+  },
+  {
+    "id": "ed-003",
+    "marca": "Valentino",
+    "nombre": "Born In Roma",
+    "genero": "unisex",
+    "concentracion": "Eau de Parfum",
+    "notas_salida": ["bergamota", "pimienta negra"],
+    "notas_corazon": ["jazmín", "azahar"],
+    "notas_fondo": ["vainilla bourbon", "almizcle", "ámbar gris"],
+    "formatos_ml": [3, 5, 10],
+    "precio_10ml_clp": 11490,
+    "stock": false
+  },
+  {
+    "id": "ed-004",
+    "marca": "Lancôme",
+    "nombre": "La Vie Est Belle",
+    "genero": "femenino",
+    "concentracion": "Eau de Parfum",
+    "notas_salida": ["grosella negra", "pera"],
+    "notas_corazon": ["iris", "jazmín", "azahar"],
+    "notas_fondo": ["praliné", "vainilla", "pachuli"],
+    "formatos_ml": [2, 3, 5, 10, 30, 50],
+    "precio_10ml_clp": 11990,
+    "stock": true
+  },
+  {
+    "id": "ed-005",
+    "marca": "Jean Paul Gaultier",
+    "nombre": "Le Male",
+    "genero": "masculino",
+    "concentracion": "Eau de Toilette",
+    "notas_salida": ["menta", "lavanda", "bergamota"],
+    "notas_corazon": ["canela", "comino"],
+    "notas_fondo": ["vainilla", "haba tonka", "sándalo"],
+    "formatos_ml": [2, 3, 5, 10],
+    "precio_10ml_clp": 9990,
+    "stock": true
+  }
+]
