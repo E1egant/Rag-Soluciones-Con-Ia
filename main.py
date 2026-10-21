@@ -1,34 +1,38 @@
 """
-Demo de línea de comandos del agente Elegant Drops.
+Demo del agente Elegant Drops.
 
 Uso:
-    python main.py "Busco algo dulce y vainillado, presupuesto bajo 12000 el 10ml"
+    python main.py                      # chat interactivo (memoria de la sesión)
+    python main.py "consulta" [cliente] # un solo turno
 """
 import sys
 
-# La consola de Windows suele usar cp1252, que no soporta los emojis que el
-# propio prompt de marca permite en las respuestas; sin esto, main.py crashea
-# al imprimir en vez de mostrar la respuesta del agente.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from dotenv import load_dotenv
 load_dotenv()
-from src.orchestrator import AgenteElegantDrops
+from src.agente import AgenteElegantDrops
+
+
+def turno(agente, consulta, cliente):
+    r = agente.responder(consulta, cliente_id=cliente)
+    print(f"\n> {consulta}\n{r['texto']}")
+    print("-- traza:")
+    for t in r["trace"]:
+        print("   ", t)
+    print("-- fuentes:", r["fuentes"] or "ninguna", "| derivado:", r["derivado_a_humano"])
 
 
 def main():
-    consulta = " ".join(sys.argv[1:]) or "Busco un perfume fresco para el día, no muy caro"
     agente = AgenteElegantDrops()
-    respuesta = agente.responder(consulta)
-
-    print("=" * 60)
-    print("CONSULTA:", consulta)
-    print("=" * 60)
-    print(respuesta.texto)
-    print("-" * 60)
-    print("Fuentes usadas (trazabilidad):", respuesta.fuentes_usadas or "ninguna")
-    print("Derivado a humano:", respuesta.derivado_a_humano)
+    print("Modo:", "LLM (Gemini)" if agente.llm else "determinista (sin GEMINI_API_KEY)")
+    if len(sys.argv) > 1:
+        turno(agente, sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "cliente-demo")
+        return
+    cliente = input("ID de cliente [cliente-demo]: ").strip() or "cliente-demo"
+    while (consulta := input("\ntú (vacío para salir): ").strip()):
+        turno(agente, consulta, cliente)
 
 
 if __name__ == "__main__":
