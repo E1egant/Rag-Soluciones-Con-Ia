@@ -4,3 +4,6 @@ __pycache__/
 .env
 data/trazabilidad.jsonl
 .pytest_cache/
+data/reservas.jsonl
+data/derivaciones.jsonl
+data/memoria_clientes.json
