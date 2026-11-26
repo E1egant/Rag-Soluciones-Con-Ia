@@ -6,7 +6,7 @@ agente de la EP2 (herramientas, memoria y planificación) con métricas, logs, t
 y controles de seguridad.
 
 - **Integrantes:** Diego Miranda · Lucas Alcaino
-- **Informe:** `docs/informe_ep3.docx` ([PDF](docs/informe_ep3.pdf)) · **Presentación:** `docs/presentacion_ep3.pptx`
+- **Presentación:** `docs/presentacion_ep3.pptx`
 - **Evidencia:** `docs/evidencia_pruebas.txt`, `docs/capturas/`, `data/evaluacion/`
 
 ## Instalación
@@ -84,7 +84,7 @@ turno del cliente ─► agente (traza: trace_id)
 **Validación independiente** (12 casos no usados para corregir): precisión **66,7 %**, 50 % de ataques
 bloqueados. El 97 % se midió sobre los casos que guiaron las correcciones y sobrestima la generalización.
 
-Hallazgos y correcciones: ver sección 3 del informe. Con LLM real aparecieron errores 504 en
+Con LLM real aparecieron errores 504 en
 `gemini-3.6-flash`, un 503 y un 429 en el modelo de respaldo; el agente degrada al ejecutor determinista.
 La corrida `data/evaluacion/llm` usó `gemini-3.1-flash-lite`; `llm_t02` reverifica la corrección de la
 respuesta sobre productos agotados (el caso figura fallido porque el criterio exige una frase literal).
