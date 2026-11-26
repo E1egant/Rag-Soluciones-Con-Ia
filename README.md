@@ -26,6 +26,8 @@ Todo funciona **sin clave** (ejecutor determinista). Con `GEMINI_API_KEY` el LLM
 
 ## Cómo ejecutar y validar
 
+Guía paso a paso con los resultados esperados: **[README_PRUEBAS.md](README_PRUEBAS.md)**.
+
 | Qué | Comando |
 |---|---|
 | Pruebas (42) | `python -m pytest tests/ -v` |
