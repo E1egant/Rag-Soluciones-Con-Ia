@@ -35,9 +35,12 @@ def main():
     if len(sys.argv) > 1:
         turno(agente, sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else "cliente-demo")
         return
-    cliente = input("ID de cliente [cliente-demo]: ").strip() or "cliente-demo"
-    while (consulta := input("\ntú (vacío para salir): ").strip()):
-        turno(agente, consulta, cliente)
+    try:
+        cliente = input("ID de cliente [cliente-demo]: ").strip() or "cliente-demo"
+        while (consulta := input("\ntú (vacío para salir): ").strip()):
+            turno(agente, consulta, cliente)
+    except (KeyboardInterrupt, EOFError):
+        print()
 
 
 if __name__ == "__main__":

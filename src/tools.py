@@ -39,7 +39,8 @@ def _productos(retriever: Retriever) -> dict[str, dict]:
 def crear_herramientas(cliente_id: str, retriever: Retriever, memoria: MemoriaLargoPlazo,
                        ruta_reservas: Path = RUTA_RESERVAS,
                        ruta_derivaciones: Path = RUTA_DERIVACIONES,
-                       autorizados: set[str] | None = None) -> list:
+                       autorizados: set[str] | None = None,
+                       formato_pedido: int | None = None) -> list:
     """autorizados: ids que el cliente identificó en este turno (None = sin restricción)."""
     productos = _productos(retriever)
     reservadas: set[tuple[str, int]] = set()
@@ -118,6 +119,9 @@ def crear_herramientas(cliente_id: str, retriever: Retriever, memoria: MemoriaLa
             return f"RECHAZADA: {p['nombre']} está agotado; busca una alternativa"
         if formato_ml not in p["formatos_ml"]:
             return f"RECHAZADA: formato {formato_ml}ml no existe; disponibles {p['formatos_ml']}"
+        if formato_pedido is not None and formato_ml != formato_pedido:
+            return (f"NO_AUTORIZADA: el cliente no ha confirmado el formato {formato_ml}ml; "
+                    f"pregúntale cuál quiere: {p['formatos_ml']}")
         # Si el LLM falla tras reservar, el ejecutor de respaldo reutiliza estas herramientas.
         if (id_producto, formato_ml) not in reservadas:
             _append_jsonl(ruta_reservas, {"cliente_id": cliente_id, "producto": id_producto,

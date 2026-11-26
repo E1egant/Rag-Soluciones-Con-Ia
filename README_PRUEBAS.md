@@ -29,7 +29,7 @@ Si ya tienes un `.env` con tu clave, **no ejecutes `copy`**: lo sobrescribe.
 python -m pytest tests/ -v
 ```
 
-Resultado esperado: **42 passed** (puede aparecer una advertencia de LangGraph sobre
+Resultado esperado: **72 passed** (puede aparecer una advertencia de LangGraph sobre
 `create_react_agent`).
 
 | Archivo | Qué comprueba |
@@ -37,6 +37,7 @@ Resultado esperado: **42 passed** (puede aparecer una advertencia de LangGraph s
 | `tests/test_agente.py` | Planificación, memoria, reservas, guardrails y respaldo sin LLM |
 | `tests/test_observabilidad.py` | Trazas, redacción de datos personales, correcciones, cortacircuito y métricas |
 | `tests/test_dashboard.py` | Análisis de logs y carga del dashboard con cada fuente de datos |
+| `tests/test_seguimiento.py` | Confirmaciones, formato, presupuesto, cortesías, guardrail y memoria con LLM |
 | `tests/test_pipeline.py` | Pipeline RAG de la EP1 |
 
 ## 3. Demo del agente en el chat
@@ -81,6 +82,8 @@ findstr /S /C:"persona@example.com" data\*.json data\*.jsonl
 Para un solo turno: `python main.py "quiero reservar Born In Roma 5ml" demo1`.
 
 ## 4. Dashboard
+
+Para usarlo con el LLM activo, ver la guía detallada: [GUIA_DASHBOARD.md](GUIA_DASHBOARD.md).
 
 ```powershell
 streamlit run dashboard.py
@@ -167,7 +170,7 @@ proyecto, `gemini-3.6-flash` devolvió 504.
 
 ## 7. Revisión antes de presentar
 
-- [ ] 42 pruebas aprobadas.
+- [ ] 72 pruebas aprobadas.
 - [ ] Demo del paso 3 completa.
 - [ ] Dashboard abre y muestra las fuentes.
 - [ ] Probado el modo LLM, si se va a mostrar.

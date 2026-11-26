@@ -33,6 +33,17 @@ def figura(fig: go.Figure, alto: int = 320, **ejes):
     st.plotly_chart(fig, width="stretch")
 
 
+def quien_respondio(turno: dict) -> str:
+    a = turno["atributos"]
+    if a.get("rechazado"):
+        return "Guardrail"
+    if a.get("fallback"):
+        return "Respaldo sin LLM"
+    if a.get("llamadas_llm", 0) > 0:
+        return "LLM"
+    return "Sin LLM"
+
+
 def barras_h(etiquetas, valores, titulo_x, texto):
     fig = go.Figure(go.Bar(x=valores, y=etiquetas, orientation="h", marker_color=AZUL,
                            text=texto, textposition="auto"))
@@ -76,7 +87,7 @@ with pestanas[0]:
         c[3].metric("Ataques bloqueados", "n/d" if ataques is None else f"{ataques:.0%}")
     else:
         c[0].metric("Turnos", len(turnos))
-        c[1].metric("Sesiones", len({e["session_id"] for e in turnos}))
+        c[1].metric("Turnos respondidos por el LLM", sum(quien_respondio(e) == "LLM" for e in turnos))
         c[2].metric("Turnos con error", sum(e["atributos"].get("spans_con_error", 0) > 0 for e in turnos))
         c[3].metric("Derivados a humano", analisis["senales_de_negocio"]["derivados"])
     c = st.columns(4)
@@ -159,11 +170,18 @@ with pestanas[2]:
 
 with pestanas[3]:
     por_traza = {(e["trace_id"], e.get("repeticion")): e for e in turnos}
-    orden = sorted(por_traza, key=lambda k: por_traza[k]["duracion_ms"], reverse=True)
+    criterios = {"Más recientes": "timestamp", "Más lentas": "duracion_ms"}
+    criterio = st.radio("Ordenar por", list(criterios), horizontal=True,
+                        index=0 if corrida == EN_VIVO else 1)
+    orden = sorted(por_traza, key=lambda k: por_traza[k][criterios[criterio]], reverse=True)
     elegida = st.selectbox(
-        "Traza (ordenadas de más lenta a más rápida)", orden,
-        format_func=lambda k: f"{por_traza[k]['duracion_ms']:,.1f} ms · {por_traza[k].get('caso', '')} "
-                              f"{por_traza[k]['atributos'].get('consulta', '')[:70]}")
+        "Traza", orden,
+        format_func=lambda k: f"{por_traza[k]['duracion_ms']:,.1f} ms · {quien_respondio(por_traza[k])} · "
+                              f"{por_traza[k].get('caso', '')} {por_traza[k]['atributos'].get('consulta', '')[:70]}")
+    raiz = por_traza[elegida]
+    st.markdown(f"**Respondió:** {quien_respondio(raiz)}")
+    st.text(f"Cliente: {raiz['atributos'].get('consulta', '')}\n"
+            f"Agente:  {raiz['atributos'].get('respuesta', '(sin respuesta)')}")
     spans = sorted((e for e in eventos if (e["trace_id"], e.get("repeticion")) == elegida),
                    key=lambda e: e["timestamp"])
     inicio = pd.Timestamp(spans[0]["timestamp"])

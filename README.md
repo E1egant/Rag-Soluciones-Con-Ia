@@ -27,10 +27,11 @@ Todo funciona **sin clave** (ejecutor determinista). Con `GEMINI_API_KEY` el LLM
 ## Cómo ejecutar y validar
 
 Guía paso a paso con los resultados esperados: **[README_PRUEBAS.md](README_PRUEBAS.md)**.
+Uso del dashboard con el LLM activo: **[GUIA_DASHBOARD.md](GUIA_DASHBOARD.md)**.
 
 | Qué | Comando |
 |---|---|
-| Pruebas (42) | `python -m pytest tests/ -v` |
+| Pruebas (72) | `python -m pytest tests/ -v` |
 | Dashboard | `streamlit run dashboard.py` → http://localhost:8501 |
 | Chat (genera registros "en vivo") | `python main.py` |
 | Un turno | `python main.py "quiero reservar Born In Roma 5ml" ana` |
@@ -68,6 +69,7 @@ turno del cliente ─► agente (traza: trace_id)
 | `dashboard.py` | Indicadores, alertas, latencia, errores, trazas, antes/después y registros en vivo |
 | `src/seguridad.py` | Redacción de PII y seudonimización |
 | `src/normalizacion.py` | Tipeo, sinónimos, género y detección de productos nombrados |
+| `src/seguimiento.py` | Respuestas a una oferta pendiente ("sí", "el primero", "5ml", "no gracias") y cortesías |
 | `src/agente.py`, `tools.py`, `planner.py`, `memoria.py` | Agente de la EP2, con las correcciones |
 
 ## Resultados (modo determinista, 33 casos × 5 repeticiones)
@@ -103,7 +105,7 @@ Si el modelo principal responde 504, definir `GEMINI_MODEL=gemini-3.1-flash-lite
 
 - La PII (correo, teléfono, RUT, tarjeta) se redacta antes de memoria, historial, logs y LLM.
 - Los logs usan seudónimos HMAC; `data/logs/`, reservas, derivaciones y memoria no se versionan.
-- Solo se reserva un producto que el cliente nombró o aludió, validando stock y formato.
+- Solo se reserva con producto y formato confirmados por el cliente, validando stock.
 - Guardrail contra inyección, timeout, límite de recursión y cortacircuito del LLM.
 - Pendiente: cifrado, retención, límite de tasa y supresión en logs y reservas.
 
@@ -113,6 +115,8 @@ Si el modelo principal responde 504, definir `GEMINI_MODEL=gemini-3.1-flash-lite
 - Recuperación léxica (TF-IDF + alias): falla ante expresiones nuevas e inglés.
 - El guardrail por patrones no cubre todas las paráfrasis.
 - La corrida con LLM es pequeña (11 turnos, 1 repetición).
+- La redacción del LLM no se verifica: puede afirmar algo inexacto aunque la reserva esté protegida.
+- La capa gratuita de Gemini puede agotar su cuota a mitad de una conversación.
 - Las reservas quedan en archivo; no descuentan stock ni cobran.
 - `create_react_agent` está deprecado en LangGraph 1.x.
 

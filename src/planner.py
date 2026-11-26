@@ -15,7 +15,10 @@ PATRON_RESERVA = r"\b(reserv\w*|apart\w*|comprar|quiero\s+(el|ese|este|la)\b|lo\
 PATRON_NEGACION = r"\bno\s+(\w+\s+){0,2}?(reserv|apart|compr)\w*"
 PATRON_COMPARAR = r"\b(compar\w*|diferencias?|vs|versus|cu[aá]l\s+es\s+mejor)\b"
 PATRON_PREFERENCIA = r"\b(me\s+gusta\w*|prefiero|al[eé]rgic\w*|siempre\s+uso|no\s+me\s+gusta\w*|presupuesto)\b"
-PATRON_PRESUPUESTO = r"(?:bajo|hasta|m[aá]ximo|presupuesto(?:\s+de)?|menos\s+de)\s*\$?\s*(\d[\d.]*)"
+# Un número seguido de "ml" es un formato, no un presupuesto.
+PATRON_PRESUPUESTO = (r"(?:bajo|hasta|m[aá]ximo|presupuesto(?:\s+de)?|menos\s+de)\s*\$?\s*"
+                      r"(\d+(?:\.\d{3})*)(?![\d.]*\s*ml\b)(?:\s*(mil|lucas?|k)\b)?")
+PRESUPUESTO_MINIMO_CLP = 1000
 PATRON_FORMATO = r"(\d+)\s*ml"
 
 
@@ -33,6 +36,7 @@ class Plan:
     max_precio_10ml: int = 0
     formato_ml: int = 10
     formato_explicito: bool = False
+    objetivo: list[str] = field(default_factory=list)
 
     def siguiente(self) -> Paso | None:
         return min(self.pasos, key=lambda p: p.prioridad) if self.pasos else None
@@ -60,7 +64,9 @@ def planificar(consulta: str) -> Plan:
 
     m = re.search(PATRON_PRESUPUESTO, t)
     if m:
-        plan.max_precio_10ml = int(m.group(1).replace(".", ""))
+        monto = int(m.group(1).replace(".", "")) * (1000 if m.group(2) else 1)
+        if monto >= PRESUPUESTO_MINIMO_CLP:
+            plan.max_precio_10ml = monto
     m = re.search(PATRON_FORMATO, t)
     if m:
         plan.formato_ml = int(m.group(1))

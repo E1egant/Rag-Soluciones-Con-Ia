@@ -15,8 +15,12 @@ from .normalizacion import sin_tildes
 
 # Se evalúan sobre el texto sin tildes y en minúsculas.
 PATRONES_INYECCION = [
-    r"\b(ignor\w*|olvid\w*|omit\w*|disregard|forget)\b.{0,40}\b(instrucciones|reglas|instructions|rules|prompt)\b",
-    r"\b(muestr\w*|revel\w*|dime|imprime|show|reveal|print)\b.{0,40}\b(prompt|instrucciones|instructions)\b",
+    # Máximo dos palabras entre el verbo y el objeto: "olvida lo que dije, las reglas de..." es legítimo.
+    r"\b(ignor\w*|olvid\w*|omit\w*|disregard|forget)\s+(\w+\s+){0,2}?(instrucciones|reglas|instructions|rules|prompt)\b",
+    # Pedir "las instrucciones" de un producto es legítimo; pedir las del asistente, no.
+    r"\b(muestr\w*|revel\w*|dime|imprime|show|reveal|print)\b.{0,40}"
+    r"(\bprompt\b|\btus\s+(instrucciones|reglas)\b|\byour\s+(instructions|rules)\b|"
+    r"\binstrucciones\s+(internas|del\s+sistema)\b)",
     r"\beres\s+ahora\b",
     r"\bact(ua|ue|uar)\s+como\s+(?!.*asesor)",
     r"\b(you are now|act as)\b",
