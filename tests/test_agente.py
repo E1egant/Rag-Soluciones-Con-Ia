@@ -18,6 +18,7 @@ def agente(tmp_path):
     return AgenteElegantDrops(
         memoria=MemoriaLargoPlazo(tmp_path / "mem.json"), llm=None,
         rutas=dict(ruta_reservas=tmp_path / "res.jsonl", ruta_derivaciones=tmp_path / "der.jsonl"),
+        ruta_log=tmp_path / "log.jsonl",
     )
 
 
@@ -51,7 +52,7 @@ def test_memoria_largo_plazo_recuperacion_semantica(tmp_path):
 
 def test_memoria_persiste_entre_instancias_y_afecta_el_plan(tmp_path, agente):
     agente.responder("Busco algo dulce y vainillado, presupuesto bajo 12000", "ana")
-    nuevo = AgenteElegantDrops(memoria=agente.memoria, llm=None, rutas=agente.rutas)
+    nuevo = AgenteElegantDrops(memoria=agente.memoria, llm=None, rutas=agente.rutas, ruta_log=agente.ruta_log)
     r = nuevo.responder("recomiéndame algo dulce para la noche", "ana")
     assert any("1 preferencias recuperadas" in t for t in r["trace"])
     assert all(i != "ed-001" for i in r["fuentes"])  # Black Opium (12990) excede el presupuesto recordado
@@ -101,6 +102,7 @@ def test_llm_con_falla_cae_al_ejecutor_determinista(tmp_path):
         memoria=MemoriaLargoPlazo(tmp_path / "m.json"),
         llm=LLMRoto(messages=iter([AIMessage("x")])),
         rutas=dict(ruta_reservas=tmp_path / "r.jsonl", ruta_derivaciones=tmp_path / "d.jsonl"),
+        ruta_log=tmp_path / "log.jsonl",
     )
     r = a.responder("busco algo fresco y marino", "ana")
     assert any("ejecutor determinista" in t for t in r["trace"]) and r["fuentes"]

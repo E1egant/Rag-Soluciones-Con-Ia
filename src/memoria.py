@@ -38,6 +38,15 @@ class MemoriaLargoPlazo:
         with open(self.ruta, "w", encoding="utf-8") as f:
             json.dump(datos, f, ensure_ascii=False, indent=2)
 
+    def olvidar(self, cliente_id: str) -> int:
+        """Derecho de supresión: borra todo lo recordado del cliente y devuelve cuántos hechos eran."""
+        datos = self._cargar()
+        borrados = len(datos.pop(cliente_id, []))
+        if borrados:
+            with open(self.ruta, "w", encoding="utf-8") as f:
+                json.dump(datos, f, ensure_ascii=False, indent=2)
+        return borrados
+
     def todos(self, cliente_id: str) -> list[str]:
         return [h["hecho"] for h in self._cargar().get(cliente_id, [])]
 

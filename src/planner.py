@@ -9,7 +9,10 @@ reserva rechazada).
 import re
 from dataclasses import dataclass, field
 
+from .normalizacion import sin_tildes
+
 PATRON_RESERVA = r"\b(reserv\w*|apart\w*|comprar|quiero\s+(el|ese|este|la)\b|lo\s+quiero)"
+PATRON_NEGACION = r"\bno\s+(\w+\s+){0,2}?(reserv|apart|compr)\w*"
 PATRON_COMPARAR = r"\b(compar\w*|diferencias?|vs|versus|cu[aá]l\s+es\s+mejor)\b"
 PATRON_PREFERENCIA = r"\b(me\s+gusta\w*|prefiero|al[eé]rgic\w*|siempre\s+uso|no\s+me\s+gusta\w*|presupuesto)\b"
 PATRON_PRESUPUESTO = r"(?:bajo|hasta|m[aá]ximo|presupuesto(?:\s+de)?|menos\s+de)\s*\$?\s*(\d[\d.]*)"
@@ -29,6 +32,7 @@ class Plan:
     pasos: list[Paso] = field(default_factory=list)
     max_precio_10ml: int = 0
     formato_ml: int = 10
+    formato_explicito: bool = False
 
     def siguiente(self) -> Paso | None:
         return min(self.pasos, key=lambda p: p.prioridad) if self.pasos else None
@@ -41,10 +45,10 @@ class Plan:
 
 
 def detectar_intencion(consulta: str) -> str:
-    t = consulta.lower()
+    t = sin_tildes(consulta)
     if re.search(PATRON_COMPARAR, t):
         return "comparar"
-    if re.search(PATRON_RESERVA, t):
+    if re.search(PATRON_RESERVA, t) and not re.search(PATRON_NEGACION, t):
         return "reservar"
     return "recomendar"
 
@@ -60,6 +64,7 @@ def planificar(consulta: str) -> Plan:
     m = re.search(PATRON_FORMATO, t)
     if m:
         plan.formato_ml = int(m.group(1))
+        plan.formato_explicito = True
 
     plan.pasos.append(Paso(1, "recordar_preferencias", "recuperar gustos previos del cliente"))
     plan.pasos.append(Paso(2, "buscar_catalogo", "obtener candidatos que calcen con la consulta"))

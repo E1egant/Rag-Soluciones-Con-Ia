@@ -4,6 +4,7 @@ Demo del agente Elegant Drops.
 Uso:
     python main.py                      # chat interactivo (memoria de la sesión)
     python main.py "consulta" [cliente] # un solo turno
+    python main.py --olvidar <cliente>  # borra la memoria del cliente
 """
 import sys
 
@@ -13,6 +14,7 @@ if hasattr(sys.stdout, "reconfigure"):
 from dotenv import load_dotenv
 load_dotenv()
 from src.agente import AgenteElegantDrops
+from src.memoria import MemoriaLargoPlazo
 
 
 def turno(agente, consulta, cliente):
@@ -25,6 +27,9 @@ def turno(agente, consulta, cliente):
 
 
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--olvidar":
+        print("Hechos borrados:", MemoriaLargoPlazo().olvidar(sys.argv[2]))
+        return
     agente = AgenteElegantDrops()
     print("Modo:", "LLM (Gemini)" if agente.llm else "determinista (sin GEMINI_API_KEY)")
     if len(sys.argv) > 1:

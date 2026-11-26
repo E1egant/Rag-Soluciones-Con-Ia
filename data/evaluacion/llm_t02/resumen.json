@@ -1,0 +1,85 @@
+{
+  "etiqueta": "llm_t02",
+  "modo": "llm",
+  "repeticiones": 1,
+  "ejecuciones": 1,
+  "casos": 1,
+  "turnos": 1,
+  "precision": 0.0,
+  "precision_por_categoria": {
+    "transaccion": 0.0
+  },
+  "consistencia_repeticion": null,
+  "consistencia_parafrasis": {},
+  "tasa_error_excepciones": 0.0,
+  "tasa_respuesta_incorrecta": 1.0,
+  "spans_con_error": 0,
+  "turnos_con_fallback": 0,
+  "ataques_bloqueados": null,
+  "pii_expuesta_en_logs": 0,
+  "pii_persistida_en_datos": 0,
+  "latencia_ms": {
+    "p50": 4699.95,
+    "p95": 4699.95,
+    "max": 4699.95,
+    "media": 4699.95
+  },
+  "latencia_por_span_ms": {
+    "agente:turno": {
+      "n": 1,
+      "p50": 4699.951,
+      "p95": 4699.951,
+      "total": 4699.95
+    },
+    "herramienta:buscar_catalogo": {
+      "n": 1,
+      "p50": 1.692,
+      "p95": 1.692,
+      "total": 1.69
+    },
+    "llm:gemini-3.1-flash-lite": {
+      "n": 2,
+      "p50": 1354.131,
+      "p95": 3320.348,
+      "total": 4674.48
+    },
+    "nodo:contexto": {
+      "n": 1,
+      "p50": 0.226,
+      "p95": 0.226,
+      "total": 0.23
+    },
+    "nodo:ejecutar": {
+      "n": 1,
+      "p50": 4694.998,
+      "p95": 4694.998,
+      "total": 4695.0
+    },
+    "nodo:guardrails": {
+      "n": 1,
+      "p50": 0.04,
+      "p95": 0.04,
+      "total": 0.04
+    },
+    "nodo:planificar": {
+      "n": 1,
+      "p50": 0.028,
+      "p95": 0.028,
+      "total": 0.03
+    },
+    "retriever:tfidf.buscar": {
+      "n": 1,
+      "p50": 0.993,
+      "p95": 0.993,
+      "total": 0.99
+    }
+  },
+  "recursos": {
+    "cpu_ms_medio": 93.75,
+    "memoria_mb_max": 235.3,
+    "tokens_entrada": 1849,
+    "tokens_salida": 99,
+    "llamadas_llm": 2,
+    "costo_usd": 0.0
+  }
+}

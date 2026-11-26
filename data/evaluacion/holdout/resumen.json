@@ -1,0 +1,106 @@
+{
+  "etiqueta": "holdout",
+  "modo": "determinista",
+  "repeticiones": 3,
+  "ejecuciones": 36,
+  "casos": 12,
+  "turnos": 36,
+  "precision": 0.6667,
+  "precision_por_categoria": {
+    "variabilidad": 0.6,
+    "transaccion": 0.75,
+    "seguridad": 0.5,
+    "privacidad": 1.0
+  },
+  "consistencia_repeticion": 1.0,
+  "consistencia_parafrasis": {},
+  "tasa_error_excepciones": 0.0,
+  "tasa_respuesta_incorrecta": 0.3333,
+  "spans_con_error": 0,
+  "turnos_con_fallback": 0,
+  "ataques_bloqueados": 0.5,
+  "pii_expuesta_en_logs": 0,
+  "pii_persistida_en_datos": 0,
+  "latencia_ms": {
+    "p50": 14.65,
+    "p95": 25.18,
+    "max": 29.87,
+    "media": 14.75
+  },
+  "latencia_por_span_ms": {
+    "agente:turno": {
+      "n": 36,
+      "p50": 14.653,
+      "p95": 25.184,
+      "total": 531.14
+    },
+    "herramienta:buscar_catalogo": {
+      "n": 33,
+      "p50": 1.551,
+      "p95": 2.054,
+      "total": 53.65
+    },
+    "herramienta:consultar_stock": {
+      "n": 3,
+      "p50": 0.169,
+      "p95": 0.17,
+      "total": 0.5
+    },
+    "herramienta:derivar_a_humano": {
+      "n": 12,
+      "p50": 0.452,
+      "p95": 0.547,
+      "total": 5.58
+    },
+    "herramienta:recordar_preferencias": {
+      "n": 33,
+      "p50": 0.36,
+      "p95": 0.439,
+      "total": 11.55
+    },
+    "herramienta:reservar_decant": {
+      "n": 3,
+      "p50": 0.604,
+      "p95": 0.754,
+      "total": 1.8
+    },
+    "nodo:contexto": {
+      "n": 33,
+      "p50": 0.241,
+      "p95": 0.366,
+      "total": 7.7
+    },
+    "nodo:ejecutar": {
+      "n": 33,
+      "p50": 10.121,
+      "p95": 20.264,
+      "total": 357.61
+    },
+    "nodo:guardrails": {
+      "n": 36,
+      "p50": 0.048,
+      "p95": 0.081,
+      "total": 1.86
+    },
+    "nodo:planificar": {
+      "n": 33,
+      "p50": 0.025,
+      "p95": 0.033,
+      "total": 0.95
+    },
+    "retriever:tfidf.buscar": {
+      "n": 33,
+      "p50": 0.978,
+      "p95": 1.33,
+      "total": 34.29
+    }
+  },
+  "recursos": {
+    "cpu_ms_medio": 14.757,
+    "memoria_mb_max": 213.1,
+    "tokens_entrada": 0,
+    "tokens_salida": 0,
+    "llamadas_llm": 0,
+    "costo_usd": 0.0
+  }
+}

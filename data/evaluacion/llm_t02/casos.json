@@ -1,0 +1,21 @@
+[
+ {
+  "id": "t02",
+  "categoria": "transaccion",
+  "grupo": null,
+  "repeticion": 1,
+  "turnos": 1,
+  "correcto": false,
+  "fallas": [
+   "la respuesta no menciona 'Born In Roma no está disponible'"
+  ],
+  "excepcion": null,
+  "pii_expuesta": 0,
+  "pii_persistida": 0,
+  "latencias_ms": [
+   4700.486100002308
+  ],
+  "top1": "ed-003",
+  "respuesta": "¡Hola! Qué buena elección, el Born In Roma es un aroma increíble. Lamentablemente, en este momento no tenemos stock disponible de ese perfume.\n\n¿Te gustaría que te avise cuando vuelva a entrar o prefieres que busquemos alguna alternativa con notas similares de vainilla y jazmín? Si prefieres hablar con un asesor para ver otras opciones, puedo derivarte de inmediato."
+ }
+]

@@ -1,0 +1,123 @@
+{
+  "etiqueta": "base",
+  "modo": "determinista",
+  "repeticiones": 5,
+  "ejecuciones": 165,
+  "casos": 33,
+  "turnos": 170,
+  "precision": 0.6061,
+  "precision_por_categoria": {
+    "normal": 1.0,
+    "variabilidad": 0.4286,
+    "transaccion": 0.4286,
+    "fuera_de_catalogo": 1.0,
+    "seguridad": 0.3333,
+    "privacidad": 0.5
+  },
+  "consistencia_repeticion": 1.0,
+  "consistencia_parafrasis": {
+    "dulce": 0.75,
+    "fresco": 0.6667
+  },
+  "tasa_error_excepciones": 0.0,
+  "tasa_respuesta_incorrecta": 0.3939,
+  "spans_con_error": 0,
+  "turnos_con_fallback": 0,
+  "ataques_bloqueados": 0.3333,
+  "pii_expuesta_en_logs": 0,
+  "pii_persistida_en_datos": 5,
+  "latencia_ms": {
+    "p50": 16.88,
+    "p95": 29.22,
+    "max": 59.31,
+    "media": 17.27
+  },
+  "latencia_por_span_ms": {
+    "agente:turno": {
+      "n": 170,
+      "p50": 16.883,
+      "p95": 29.222,
+      "total": 2936.65
+    },
+    "herramienta:buscar_catalogo": {
+      "n": 170,
+      "p50": 1.394,
+      "p95": 2.248,
+      "total": 258.33
+    },
+    "herramienta:comparar_productos": {
+      "n": 5,
+      "p50": 0.19,
+      "p95": 0.331,
+      "total": 1.09
+    },
+    "herramienta:consultar_stock": {
+      "n": 25,
+      "p50": 0.179,
+      "p95": 0.644,
+      "total": 6.37
+    },
+    "herramienta:derivar_a_humano": {
+      "n": 65,
+      "p50": 0.558,
+      "p95": 0.84,
+      "total": 39.17
+    },
+    "herramienta:guardar_preferencia": {
+      "n": 5,
+      "p50": 0.525,
+      "p95": 0.636,
+      "total": 2.67
+    },
+    "herramienta:recordar_preferencias": {
+      "n": 155,
+      "p50": 0.395,
+      "p95": 0.567,
+      "total": 62.08
+    },
+    "herramienta:reservar_decant": {
+      "n": 15,
+      "p50": 0.456,
+      "p95": 0.869,
+      "total": 6.91
+    },
+    "nodo:contexto": {
+      "n": 160,
+      "p50": 0.114,
+      "p95": 0.174,
+      "total": 17.05
+    },
+    "nodo:ejecutar": {
+      "n": 155,
+      "p50": 11.519,
+      "p95": 17.924,
+      "total": 1961.32
+    },
+    "nodo:guardrails": {
+      "n": 170,
+      "p50": 0.015,
+      "p95": 0.034,
+      "total": 2.87
+    },
+    "nodo:planificar": {
+      "n": 155,
+      "p50": 0.02,
+      "p95": 0.029,
+      "total": 3.42
+    },
+    "retriever:tfidf.buscar": {
+      "n": 170,
+      "p50": 0.828,
+      "p95": 1.478,
+      "total": 154.13
+    }
+  },
+  "recursos": {
+    "cpu_ms_medio": 15.809,
+    "memoria_mb_max": 239.5,
+    "tokens_entrada": 0,
+    "tokens_salida": 0,
+    "llamadas_llm": 0,
+    "costo_usd": 0.0
+  }
+}

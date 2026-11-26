@@ -11,10 +11,15 @@ Valida la consulta del cliente antes de que entre al pipeline RAG:
 """
 import re
 
+from .normalizacion import sin_tildes
+
+# Se evalúan sobre el texto sin tildes y en minúsculas.
 PATRONES_INYECCION = [
-    r"ignora(?:r)?\s+(tus|las)\s+instrucciones",
-    r"eres\s+ahora",
-    r"actúa\s+como\s+(?!.*asesor)",
+    r"\b(ignor\w*|olvid\w*|omit\w*|disregard|forget)\b.{0,40}\b(instrucciones|reglas|instructions|rules|prompt)\b",
+    r"\b(muestr\w*|revel\w*|dime|imprime|show|reveal|print)\b.{0,40}\b(prompt|instrucciones|instructions)\b",
+    r"\beres\s+ahora\b",
+    r"\bact(ua|ue|uar)\s+como\s+(?!.*asesor)",
+    r"\b(you are now|act as)\b",
     r"system\s*prompt",
 ]
 
@@ -66,7 +71,7 @@ def validar_consulta(texto: str) -> str:
     if len(texto) > MAX_LARGO_CONSULTA:
         raise ConsultaRechazada("La consulta excede el largo permitido.")
     for patron in PATRONES_INYECCION:
-        if re.search(patron, texto, flags=re.IGNORECASE):
+        if re.search(patron, sin_tildes(texto)):
             raise ConsultaRechazada(
                 "Se detectó un posible intento de manipulación de instrucciones."
             )

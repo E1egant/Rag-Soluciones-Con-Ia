@@ -7,3 +7,4 @@ data/trazabilidad.jsonl
 data/reservas.jsonl
 data/derivaciones.jsonl
 data/memoria_clientes.json
+data/logs/
