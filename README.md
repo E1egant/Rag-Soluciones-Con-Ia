@@ -6,7 +6,7 @@ agente de la EP2 (herramientas, memoria y planificación) con métricas, logs, t
 y controles de seguridad.
 
 - **Integrantes:** Diego Miranda · Lucas Alcaino
-- **Informe:** `docs/informe_ep3.docx` · **Presentación:** `docs/presentacion_ep3.pptx`
+- **Informe:** `docs/informe_ep3.docx` ([PDF](docs/informe_ep3.pdf)) · **Presentación:** `docs/presentacion_ep3.pptx`
 - **Evidencia:** `docs/evidencia_pruebas.txt`, `docs/capturas/`, `data/evaluacion/`
 
 ## Instalación
